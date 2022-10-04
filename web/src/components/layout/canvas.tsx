@@ -4,7 +4,7 @@ import useStore from '@/helpers/store'
 import { useEffect, useRef } from 'react'
 
 const LControl = () => {
-  const dom = useStore((state) => state.dom)
+  const dom = useStore((state) => state.dom) as any
   const control = useRef(null)
 
   useEffect(() => {
@@ -22,10 +22,11 @@ const LControl = () => {
   return <OrbitControls ref={control} domElement={dom.current} />
 }
 const LCanvas = ({ children }) => {
-  const dom = useStore((state) => state.dom)
+  const dom = useStore((state) => state.dom) as any
 
   return (
     <Canvas
+      // @ts-ignore
       mode='concurrent'
       style={{
         position: 'absolute',

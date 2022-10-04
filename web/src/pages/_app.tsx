@@ -1,16 +1,22 @@
-import '../styles/globals.css'
-import type { AppProps } from 'next/app'
-import Head from 'next/head';
+import Header from '@/config'
+import Dom from '@/components/layout/dom'
+import '@/styles/index.css'
+import dynamic from 'next/dynamic'
 
-function MyApp({ Component, pageProps }: AppProps) {
+const LCanvas = dynamic(() => import('@/components/layout/canvas'), {
+  ssr: true,
+})
+
+function App({ Component, pageProps = { title: 'index' } }) {
   return (
     <>
-      <Head>
-        <meta name="viewport" content="initial-scale=1, width=device-width" />
-      </Head>
-      <Component {...pageProps} />
+      <Header title={pageProps.title} />
+      <Dom>
+        <Component {...pageProps} />
+      </Dom>
+      {Component?.r3f && <LCanvas>{Component.r3f(pageProps)}</LCanvas>}
     </>
-  );
+  )
 }
 
-export default MyApp
+export default App

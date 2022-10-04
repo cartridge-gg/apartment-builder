@@ -1,28 +1,54 @@
 {
-  "name": "webb",
-  "version": "0.1.0",
+  "name": "react-three-next",
+  "version": "2.0.0",
+  "authors": [
+    "Renaud ROHLINGER <https://twitter.com/onirenaud>"
+  ],
+  "license": "MIT",
   "private": true,
-  "scripts": {
-    "dev": "next dev",
-    "build": "next build",
-    "start": "next start",
-    "lint": "next lint"
+  "engines": {
+    "node": ">=14"
   },
   "dependencies": {
-    "@emotion/react": "^11.10.4",
-    "@emotion/styled": "^11.10.4",
-    "@fontsource/roboto": "^4.5.8",
-    "@mui/material": "^5.10.8",
-    "next": "12.3.1",
-    "react": "18.2.0",
-    "react-dom": "18.2.0"
+    "@react-three/drei": "^9.32.3",
+    "@react-three/fiber": "^8.8.4",
+    "glsl-random": "^0.0.5",
+    "next": "^12.3.0",
+    "next-pwa": "^5.6.0",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "three": "^0.144.0",
+    "three-stdlib": "^2.15.0",
+    "zustand": "^4.1.1"
   },
   "devDependencies": {
-    "@types/node": "18.8.2",
-    "@types/react": "18.0.21",
-    "@types/react-dom": "18.0.6",
-    "eslint": "8.24.0",
-    "eslint-config-next": "12.3.1",
-    "typescript": "4.8.4"
+    "@next/bundle-analyzer": "^12.3.0",
+    "@types/node": "^18.8.2",
+    "@types/react": "^18.0.21",
+    "@types/three": "^0.144.0",
+    "autoprefixer": "^10.4.2",
+    "eslint": "^8.23.0",
+    "eslint-config-next": "^12.3.0",
+    "eslint-config-prettier": "^8.5.0",
+    "eslint-plugin-tailwind": "^0.2.1",
+    "file-loader": "^6.2.0",
+    "glslify": "^7.1.1",
+    "glslify-loader": "^2.0.0",
+    "postcss": "^8.4.14",
+    "prettier": "^2.7.1",
+    "raw-loader": "^4.0.2",
+    "tailwindcss": "^3.1.6",
+    "typescript": "^4.8.4",
+    "url-loader": "^4.1.1"
+  },
+  "scripts": {
+    "lint": "yarn prettier && yarn eslint",
+    "eslint": "next lint --fix --dir src",
+    "prettier": "prettier --list-different \"./src/**/*.{ts,tsx,md}\"",
+    "dev": "next dev",
+    "build": "next build",
+    "export": "EXPORT=true next build && EXPORT=true next export",
+    "analyze": "ANALYZE=true next build",
+    "start": "next start"
   }
 }

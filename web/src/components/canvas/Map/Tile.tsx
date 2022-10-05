@@ -1,43 +1,53 @@
-import Tilemap from "@/map/Tilemap";
-import { useRef } from "react";
-import THREE from "three";
+import { Tileset } from "@/hooks/tileset";
+import { ThreeEvent, useFrame, useThree } from "@react-three/fiber";
+import { useEffect, useRef, useState } from "react";
+import * as THREE from "three";
 
 interface TileProps {
-    tilemap: Tilemap;
     x: number;
     y: number;
+    z: number;
     width: number;
     height: number;
-    tilesetId: number;
+    tileset: Tileset;
     tileId: number;
 }
 
 export default function Tile({
-    tilemap,
     x,
     y,
-    // width,
-    // height,
-    tilesetId,
+    z,
+    width,
+    height,
+    tileset,
     tileId,
-}: TileProps) {
+    ...props
+}: TileProps & Partial<JSX.IntrinsicElements['mesh']>) {
     const mesh = useRef(null);
+    const three = useThree();
+    const [ texture, setTexture ] = useState(null);
 
-    const tileset = tilemap.getTileset(tilesetId);
+    useEffect(() => {
+        const texture = tileset.texture.clone();
+        texture.repeat.x = 1 / tileset.width;
+        texture.repeat.y = 1 / tileset.height;
+        texture.center.x = 0;
+        texture.center.y = 1;
+        texture.offset.x = (tileId % tileset.width) / tileset.width;
+        texture.offset.y = 1 - Math.floor(tileId / tileset.width) / tileset.height;
 
-    const texture = this.tileset.tileset.clone();
-    texture.offset.x = tileId % tileset.width;
-    texture.offset.y = Math.floor(tileId / tileset.width);
+        setTexture(texture);
+    }, [tileset, tileId])
 
     return (
         <>
             <mesh 
                 ref={mesh}
-                position={[x * tilemap.tileWidth, y * tilemap.tileHeight, 0]}
-                // scale={[width, height, 1]}
+                position={[x, y, z]}
+                {...props}
             >
-                <planeGeometry args={[tilemap.tileWidth, tilemap.tileHeight]} />
-                <meshBasicMaterial args={[{ map: texture, side: THREE.DoubleSide }]} />
+                <planeGeometry args={[width, height]} />
+                <meshBasicMaterial args={[{ map: texture, side: THREE.DoubleSide, transparent: true }]} />
             </mesh>
         </>
     );

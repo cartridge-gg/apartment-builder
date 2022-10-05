@@ -1,7 +1,8 @@
-import { Canvas } from '@react-three/fiber'
-import { OrbitControls, Preload } from '@react-three/drei'
+import { Canvas, useFrame, useThree } from '@react-three/fiber'
+import { OrbitControls, OrthographicCamera, PerspectiveCamera, Preload } from '@react-three/drei'
 import useStore from '@/helpers/store'
 import { useEffect, useRef } from 'react'
+import * as THREE from 'three'
 
 const LControl = () => {
   const dom = useStore((state) => state.dom) as any
@@ -18,8 +19,9 @@ const LControl = () => {
       }
     }
   }, [dom, control])
+
   // @ts-ignore
-  return <OrbitControls ref={control} domElement={dom.current} />
+  return <OrbitControls enablePan enableRotate={false} ref={control} domElement={dom.current} />
 }
 const LCanvas = ({ children }) => {
   const dom = useStore((state) => state.dom) as any
@@ -31,9 +33,11 @@ const LCanvas = ({ children }) => {
       style={{
         position: 'absolute',
         top: 0,
+        backgroundColor: '#202e37',
       }}
       onCreated={(state) => state.events.connect(dom.current)}
     >
+      <OrthographicCamera makeDefault position={[0, 0, 200]} />
       <LControl />
       <Preload all />
       {children}

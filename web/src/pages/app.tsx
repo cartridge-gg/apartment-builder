@@ -1,5 +1,5 @@
-import TilemapComponent from '@/components/canvas/Map/Tilemap'
-import Instructions from '@/components/dom/Instructions'
+import Tilemap from '@/components/canvas/Map/Tilemap'
+import { ObjectType, TileType } from '@/hooks/tileset'
 import { useTexture } from '@react-three/drei'
 import { useLoader, useThree } from '@react-three/fiber'
 import dynamic from 'next/dynamic'
@@ -14,7 +14,6 @@ const Tile = dynamic(() => import('@/components/canvas/Map/Tile'), {
 const Page = (props) => {
   return (
     <>
-      <Instructions />
     </>
   )
 }
@@ -22,7 +21,7 @@ const Page = (props) => {
 Page.r3f = (props) => {
   return (
     <>
-      <TilemapComponent 
+      <Tilemap 
         x={0}
         y={0}
         z={0}
@@ -31,9 +30,16 @@ Page.r3f = (props) => {
         width={16}
         height={16}
         tilesetProps={[{
-          texture: '/spritesheet.png',
+          tileType: TileType.Floor,
+          sheet: '/spritesheet.png',
           tileWidth: 32,
           tileHeight: 32,
+          objectsType: ObjectType.Furnitures,
+          objects: [{
+            startingTile: 0,
+            width: 2,
+            height: 2,
+          }],
         }]} 
       />
     </>

@@ -1,6 +1,8 @@
 import dynamic from 'next/dynamic'
+import { AbsoluteCenter, Box, Center, Text } from '@chakra-ui/react'
+import PixelButton from '@/components/dom/PixelButton'
+
 // Step 5 - delete Instructions components
-import Instructions from '@/components/dom/Instructions'
 // import Shader from '@/components/canvas/Shader/Shader'
 
 // Dynamic import is used to prevent a payload when the website start that will include threejs r3f etc..
@@ -15,7 +17,12 @@ const Shader = dynamic(() => import('@/components/canvas/Shader/Shader'), {
 const Page = (props) => {
   return (
     <>
-      <Instructions />
+      <AbsoluteCenter>
+        <Text textAlign="center" color="white" fontFamily="Retro" fontSize={48}>
+          Welcome to your future <strong>on-chain</strong> apartment
+        </Text>
+        
+      </AbsoluteCenter>
     </>
   )
 }

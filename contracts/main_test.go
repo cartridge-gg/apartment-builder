@@ -39,7 +39,9 @@ func beforeEach(t *testing.T) *testConfiguration {
 	if !ok {
 		t.Fatal("env supports testnet and devnet")
 	}
-	testConfig.client = gateway.NewClient(gateway.WithChain(testEnv))
+	testConfig.client = gateway.NewClient(
+		gateway.WithChain(testEnv),
+	)
 	t.Cleanup(func() {
 	})
 	return &testConfig

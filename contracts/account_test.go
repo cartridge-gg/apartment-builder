@@ -1,9 +1,13 @@
 package contracts
 
 import (
+	"bytes"
 	"context"
 	"fmt"
+	"io"
+	"log"
 	"math/big"
+	"net/http"
 	"os"
 	"strings"
 	"testing"
@@ -132,6 +136,7 @@ func TestDeploy_DappsContract(t *testing.T) {
 		},
 	)
 	fmt.Println("transaction", deploy.TransactionHash)
+	fmt.Println("contract", deploy.ContractAddress)
 	if !strings.HasPrefix(deploy.TransactionHash, "0x") {
 		t.Fatalf("could not 'DEPLOY' dapps, %+v\n", deploy)
 	}
@@ -143,4 +148,140 @@ func TestDeploy_DappsContract(t *testing.T) {
 	fmt.Printf("export HASH=%s\n", deploy.TransactionHash)
 	fmt.Println("starknet get_transaction --hash $HASH --feeder_gateway http://localhost:5050/feeder_gateway")
 	fmt.Println("...")
+}
+
+// MintEth
+func MintEth(t *testing.T, accountAddress string) {
+	payload := fmt.Sprintf(`{"address": "%s","amount": 1000000000000000}`, accountAddress)
+	resp, err := http.Post(
+		"http://localhost:5050/mint",
+		"application/json",
+		bytes.NewBuffer([]byte(payload)),
+	)
+
+	if err != nil {
+		log.Fatal("could not POST data", err)
+	}
+
+	if resp.StatusCode != http.StatusOK {
+		log.Fatal("unexpected status code:", resp.StatusCode)
+	}
+	ret, err := io.ReadAll(resp.Body)
+	defer resp.Body.Close()
+	if err != nil {
+		log.Fatal("could not read body", err)
+	}
+	fmt.Println("output", string(ret))
+}
+
+// CallContract
+func CallContract(t *testing.T, call types.FunctionCall) []string {
+	testConfig := beforeEach(t)
+
+	gw := testConfig.client
+	ctx := context.Background()
+	result, err := gw.Call(ctx, call, "latest")
+	if err != nil {
+		t.Fatalf("could not 'DEPLOY' contract: %v\n", err)
+	}
+	return result
+}
+
+func TestAccount_MintEth(t *testing.T) {
+	accountAddress := "0x386cabdfdf6369d81f583bfcd2a49a9fda7a4bf41ebdfd3309ee0d5c4708e86"
+	ethAddress := "0x62230ea046a9a5fbc261ac77d03c8d41e5d442db2284587570ab46455fd2488"
+	accountAddressBigInt, _ := big.NewInt(0).SetString(accountAddress, 0)
+
+	MintEth(t, accountAddress)
+	res := CallContract(t, types.FunctionCall{
+		ContractAddress:    ethAddress,
+		EntryPointSelector: "balanceOf",
+		Calldata: []string{
+			accountAddressBigInt.Text(10),
+		},
+	})
+	if len(res) == 0 || res[0] == "0x0" {
+		t.Fatalf("no ETH sent to the account yet: %+v\n", res)
+	}
+}
+
+func AddInvokeV1Transaction(t *testing.T, accountAddress string) {
+	testConfig := beforeEach(t)
+
+	godotenv.Load(fmt.Sprintf(".env.%s", testEnv))
+	privateString := os.Getenv("PRIVATE_KEY")
+	privateInt, _ := big.NewInt(0).SetString(privateString, 0)
+
+	gw := testConfig.client
+	ctx := context.Background()
+	nonce, err := gw.Nonce(ctx, accountAddress, "pending")
+	if err != nil {
+		t.Fatalf("could not get nonce: %v", err)
+	}
+	maxFee, _ := big.NewInt(0).SetString("0x6000000000001", 0)
+	MaxFee := &types.Felt{Int: maxFee}
+
+	accountAddressInt, _ := big.NewInt(0).SetString(accountAddress, 0)
+	dappAddress, _ := big.NewInt(0).SetString("0x77fb20172a7691c763a38fb8dc5e5ac9ef989ae0fe15befa9cfe5afeb7efbde", 0)
+
+	calldataString := []string{
+		"1",
+		dappAddress.Text(10), // contract
+		caigo.GetSelectorFromName("mint").Text(10), // mint
+		"0",                        // offset
+		"3",                        // # parameter
+		"3",                        // Total parameters
+		accountAddressInt.Text(10), // call
+		"1",
+		"0",
+	}
+	calldata := []*big.Int{}
+	for _, v := range calldataString {
+		vInt, _ := big.NewInt(0).SetString(v, 0)
+		calldata = append(calldata, vInt)
+	}
+	cdHash, err := caigo.Curve.ComputeHashOnElements(calldata)
+	if err != nil {
+		t.Fatalf("could not get calldata hash: %v", err)
+	}
+	multiHashData := []*big.Int{
+		caigo.UTF8StrToBig(caigo.TRANSACTION_PREFIX),
+		big.NewInt(1),
+		accountAddressInt,
+		big.NewInt(0),
+		cdHash,
+		MaxFee.Int,
+		caigo.UTF8StrToBig(gw.ChainId),
+		nonce,
+	}
+	fmt.Println(gw.ChainId)
+	txHash, err := caigo.Curve.ComputeHashOnElements(multiHashData)
+	fmt.Printf("tx 0x%s\n", txHash.Text(16))
+	if err != nil {
+		t.Fatalf("could not get signature: %v", err)
+	}
+	r, s, _ := caigo.Curve.Sign(txHash, privateInt)
+
+	res, err := gw.Invoke(ctx, types.FunctionInvoke{
+		FunctionCall: types.FunctionCall{
+			ContractAddress: accountAddress,
+			Calldata:        calldataString,
+		},
+		Signature: []*types.Felt{{Int: r}, {Int: s}},
+		MaxFee:    MaxFee,
+		Version:   1,
+		Nonce:     &types.Felt{Int: nonce},
+	})
+	if err != nil {
+		t.Fatalf("could not get Nonce for contract: %v", err)
+	}
+	if nonce == nil {
+		t.Fatalf("could not get Nonce for contract: 0x%s", nonce.Text(16))
+	}
+	fmt.Printf("%+v\n", res)
+}
+
+func TestAccount_addInvokeTransaction(t *testing.T) {
+	accountAddress := "0x386cabdfdf6369d81f583bfcd2a49a9fda7a4bf41ebdfd3309ee0d5c4708e86"
+	AddInvokeV1Transaction(t, accountAddress)
 }

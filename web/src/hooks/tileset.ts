@@ -54,11 +54,12 @@ export const useTilesets = (tilesetProps: TilesetProps[]) => {
 
     useEffect(() => {
         textures.forEach(texture => {
+            texture.encoding = THREE.sRGBEncoding;
             texture.wrapS = THREE.RepeatWrapping;
             texture.wrapT = THREE.RepeatWrapping;
             texture.magFilter = THREE.NearestFilter;
             texture.minFilter = THREE.NearestFilter;
-            texture.encoding = THREE.sRGBEncoding;
+            texture.generateMipmaps = false;
         });
 
         setTilesets(tilesetProps.map((tileset, index) => ({
@@ -75,3 +76,33 @@ export const useTilesets = (tilesetProps: TilesetProps[]) => {
 
     return tilesets;
 }
+
+export const tilesets: TilesetProps[] = [{
+    tileType: TileType.Floor,
+    sheet: '/Apt_Floors.png',
+    tileWidth: 32,
+    tileHeight: 32,
+    }, {
+    tileType: TileType.Wall,
+    sheet: '/Apt_Walls.png',
+    tileWidth: 32,
+    tileHeight: 32,
+    }, {
+    tileType: TileType.Object,
+    sheet: '/Apt_Object_Surface1.png',
+    tileWidth: 8,
+    tileHeight: 8,
+    objectsType: ObjectType.Furnitures,
+    objects: [{
+        startingTile: 0,
+        width: 4,
+        height: 4,
+    }, {
+        startingTile: 2,
+        width: 16,
+        height: 4,
+    }]
+}]
+  
+export const walls = [20, 21, 23, 24]
+export const floors = [0, 1, 2, 3, 20, 21, 22, 40, 41]

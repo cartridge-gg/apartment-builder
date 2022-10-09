@@ -54,8 +54,9 @@ export default function TilemapComponent({
 
     const { tiles, getTileAt, setTileAt, setTile, setTiles } = useTiles(
         width, height, 
-        Array.from({ length: width * height }, () => ({ tilesetId: 0, tileId: 68 }))
+        initialTiles,
     );
+    
 
     useEffect(() => {
         if (mouseDown || !selectedTiles) return;
@@ -63,7 +64,6 @@ export default function TilemapComponent({
         const [x, y, w, h] = selectedTiles;
         for (let i = 0; i < Math.abs(w); i++) {
             for (let j = 0; j < Math.abs(h); j++) {
-                console.log(x + i*Math.sign(w), y + j*Math.sign(h));
                 setTileAt(x + i * Math.sign(w), y + j * Math.sign(h), {
                     tilesetId: 0,
                     tileId: 99,
@@ -75,8 +75,6 @@ export default function TilemapComponent({
 
     useEffect(() => {
         if (!mouseDown) return;
-
-        console.log(selectedTiles);
     }, [selectedTiles]);
 
     const onMouseDown = (e: ThreeEvent<MouseEvent>, tileIdx: number) => {
@@ -106,15 +104,6 @@ export default function TilemapComponent({
 
     return (
         <>
-            {tilesets[0] && <Object 
-                x={-10}
-                y={-10}
-                z={z}
-                tileWidth={tileWidth}
-                tileHeight={tileHeight}
-                tileset={tilesets[0]}
-                objectId={0}
-            />}
             {tiles.length > 0 && tiles.map((tile, index) => {
                 const tileX = (index % width);
                 const tileY = Math.floor(index / width);

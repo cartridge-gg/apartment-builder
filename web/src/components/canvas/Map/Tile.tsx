@@ -13,6 +13,7 @@ interface TileProps {
     tileId: number;
     tileset: Tileset;
     selected: boolean;
+    selectable: boolean;
 }
 
 export default function Tile({
@@ -24,6 +25,7 @@ export default function Tile({
     tileset,
     tileId,
     selected,
+    selectable,
     ...props
 }: TileProps & Partial<MeshProps>) {
     const tileMesh = useRef<THREE.Mesh>(null);
@@ -66,7 +68,7 @@ export default function Tile({
                 <planeGeometry args={[width, height]} />
                 <meshBasicMaterial map={texture} opacity={texture ? 1 : 0} side={THREE.DoubleSide} transparent />
             </mesh>
-            {/* {tileset?.tileType === TileType.Floor && <mesh
+            {selectable && <mesh
                 ref={overlayMesh}
                 position={[x, y, z]}
                 onPointerOver={() => setHovered(true)}
@@ -74,7 +76,7 @@ export default function Tile({
             >
                 <planeGeometry args={[0.9*width, 0.9*height]} />
                 <meshBasicMaterial color={selected ? new THREE.Color(0x4287f5) : new THREE.Color(0xffffff)} opacity={hovered || selected ? 0.5 : 0.3} side={THREE.DoubleSide} transparent />
-            </mesh>} */}
+            </mesh>}
         </>
     );
 }

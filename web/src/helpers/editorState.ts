@@ -1,31 +1,31 @@
 import { proxy } from "valtio";
 
 export enum EditorState {
-    None,
-    PlacingObject,
-    ReplacingWall,
-    ReplacingFloor,
+    None = 0,
+    PlacingObject = 1,
+    ReplacingWall = 2,
+    ReplacingFloor = 3,
 }
 
 interface State {
-    editorState: EditorState;
-    selectedObject: {
+    tool: EditorState;
+    selectedObject?: {
         tilesetId: number;
         objectId: number;
     };
-    selectedWall: {
+    selectedWall?: {
         tilesetId: number;
         tileId: number;
     };
-    selectedFloor: {
+    selectedFloor?: {
         tilesetId: number;
         tileId: number;
     };
 }
 
-export const state = proxy({
-    state: EditorState.None,
-    selectedObject: null,
-    selectedWall: null,
-    selectedFloor: null,
+export const state = proxy(<State>{
+    tool: EditorState.None,
+    selectedObject: undefined,
+    selectedWall: undefined,
+    selectedFloor: undefined,
 });

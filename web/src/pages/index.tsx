@@ -1,5 +1,5 @@
 import dynamic from 'next/dynamic'
-import { AbsoluteCenter, Box, Button, Center, Flex, Spacer, Text } from '@chakra-ui/react'
+import { AbsoluteCenter, Box, Button, Center, Flex, HStack, Spacer, Text } from '@chakra-ui/react'
 import PixelButton from '@/components/dom/PixelButton'
 import Tilemap from '@/components/canvas/Map/Tilemap'
 import { tilesets } from '@/hooks/tileset'
@@ -21,7 +21,9 @@ const Shader = dynamic(() => import('@/components/canvas/Shader/Shader'), {
 // dom components goes here
 const Page = (props) => {
   const { connect, connectors } = useConnectors();
-  const { account } = useAccount();
+  const { account, address, status } = useAccount();
+
+
 
   return (
     <Flex height="80%" backdropFilter="blur(5px)" p="12" direction="column" position="absolute" top="15%" left="50%" transform="translateX(-50%)">
@@ -29,7 +31,7 @@ const Page = (props) => {
       <Text textShadow="-6px 0 black, 0 10px black, 6px 0 black, 0 -6px black"  textAlign="center" color="#94bbd6" fontFamily="Retro" fontSize={48}>
         Welcome to your future <strong>on-chain</strong> apartment
       </Text>
-      <Box margin="auto">
+      <HStack gap="2px" margin="auto">
         <Button 
           height={32}
           onClick={() => {
@@ -51,7 +53,7 @@ const Page = (props) => {
             Whitepaper
           </Button>
         </a>
-      </Box>
+      </HStack>
       <Spacer />
     </Flex>
   )

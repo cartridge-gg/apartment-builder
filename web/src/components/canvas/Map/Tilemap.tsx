@@ -1,9 +1,11 @@
+import { EditorState, state } from "@/helpers/editorState";
 import { useTiles } from "@/hooks/tiles";
-import { TilesetProps, useTilesets } from "@/hooks/tileset";
+import { TilesetProps, TileType, useTilesets } from "@/hooks/tileset";
 import { useTexture } from "@react-three/drei";
 import { ThreeEvent } from "@react-three/fiber";
 import { useEffect, useState } from "react";
 import * as THREE from "three";
+import { useSnapshot } from "valtio";
 import Object from "./Object";
 import Tile from "./Tile";
 
@@ -52,11 +54,12 @@ export default function TilemapComponent({
     const [mouseDown, setMouseDown] = useState(false);
     const [selectedTiles, setSelectedTiles] = useState<THREE.Vector4Tuple>(null);
 
+    const snap = useSnapshot(state);
+
     const { tiles, getTileAt, setTileAt, setTile, setTiles } = useTiles(
         width, height, 
         initialTiles,
     );
-    
 
     useEffect(() => {
         if (mouseDown || !selectedTiles) return;
@@ -64,10 +67,17 @@ export default function TilemapComponent({
         const [x, y, w, h] = selectedTiles;
         for (let i = 0; i < Math.abs(w); i++) {
             for (let j = 0; j < Math.abs(h); j++) {
-                setTileAt(x + i * Math.sign(w), y + j * Math.sign(h), {
-                    tilesetId: 0,
-                    tileId: 99,
-                });
+                if (snap.tool == EditorState.ReplacingFloor) {
+                    setTileAt(x + i * Math.sign(w), y + j * Math.sign(h), {
+                        tilesetId: snap.selectedFloor.tilesetId,
+                        tileId: snap.selectedFloor.tileId,
+                    });
+                } else if (snap.tool == EditorState.ReplacingWall) {
+                    setTileAt(x + i * Math.sign(w), y + j * Math.sign(h), {
+                        tilesetId: snap.selectedWall.tilesetId,
+                        tileId: snap.selectedWall.tileId,
+                    });
+                }
             }
         }
         setSelectedTiles(null);
@@ -105,6 +115,7 @@ export default function TilemapComponent({
     return (
         <>
             {tiles.length > 0 && tiles.map((tile, index) => {
+                const tileset = tilesets[tile.tilesetId];
                 const tileX = (index % width);
                 const tileY = Math.floor(index / width);
 
@@ -115,6 +126,11 @@ export default function TilemapComponent({
                     tileY > selectedTiles[1] + selectedTiles[3] && tileY <= selectedTiles[1] :
                     tileY >= selectedTiles[1] && tileY < selectedTiles[1] + selectedTiles[3]);
 
+                const selectable = snap.tool == EditorState.ReplacingWall ? 
+                    tileset.tileType === TileType.Wall :
+                snap.tool == EditorState.ReplacingFloor ?
+                    tileset.tileType === TileType.Floor : false;
+
                 return <Tile 
                     key={index}
                     x={x + tileX*tileWidth}
@@ -122,9 +138,10 @@ export default function TilemapComponent({
                     z={z + 0}
                     width={tileWidth}
                     height={tileHeight}
-                    tileset={tilesets[tile.tilesetId]}
+                    tileset={tileset}
                     tileId={tile.tileId}
                     selected={xBetween && yBetween}
+                    selectable={selectable}
                     onPointerDown={(event) => onMouseDown(event, index)}
                     onPointerUp={() => setMouseDown(false)}
                     onPointerOver={() => onHoverTile(index)}

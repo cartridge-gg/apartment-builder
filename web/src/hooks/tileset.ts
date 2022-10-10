@@ -98,11 +98,11 @@ export const tilesets: TilesetProps[] = [{
         width: 4,
         height: 4,
     }, {
-        startingTile: 2,
-        width: 16,
+        startingTile: 4,
+        width: 12,
         height: 4,
     }]
 }]
   
-export const walls = [20, 21, 23, 24]
+export const walls = [20, 21, 22, 23]
 export const floors = [0, 1, 2, 3, 20, 21, 22, 40, 41]
